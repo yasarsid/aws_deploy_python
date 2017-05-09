@@ -5,9 +5,6 @@ import os
 # TODO: Uses the Access configured in ~/.aws/credentials file
 # TODO: Get Region as from the file - Also enable supply key and id from config file
 
-aws_access_key_id = 'YOUR_ACCESS_KEY'
-aws_secret_access_key = 'YOUR_SECRET_KEY'
-
 
 class Driver:
     """
@@ -29,10 +26,10 @@ class Driver:
         :param bucket_name
         :return: Bucket Name and Object Key for uploaded Jar
         """
-        s3 = boto3.client('s3')
+        s3 = boto3.resource('s3')
         # TODO: Add more logging to indicate the upload status
         key = os.path.basename(path_to_jar)
-        s3.meta.client.upload_file(path_to_jar, bucket_name, key)
+        s3.meta.client.upload_file(path_to_jar, bucket_name, key, ExtraArgs={'ACL':'authenticated-read'})
         return bucket_name, key
 
     @staticmethod
@@ -54,22 +51,22 @@ class Driver:
         """
         key_for_function_arn = 'FunctionArn'
         lambda_client = boto3.client('lambda')
-        response = lambda_client.update_function_code(lambda_function_name, None, s3_bucket_name, s3_object_key, True)
-        return response[key_for_function_arn]
+        response = lambda_client.update_function_code(FunctionName=lambda_function_name,S3Bucket=s3_bucket_name,S3Key=s3_object_key)
+        return response
 
     def execute(self):
         """
         drive the complete implementation
         :return: 
         """
-        function_arn = set()
+        function_arn = []
         # TODO: Better logging to indicate the number of configs processed and show to the user.
         config_values = self.read_json_config(self.json_config_filename)
         for config in config_values['config']:
             bucket_name, object_key = self.upload_jar_to_s3(config[self.key_for_relative_path_to_jar],
                                                             config[self.key_for_s3_bucket_name])
             for lambda_function_name in config[self.key_for_lambda_function_name]:
-                function_arn.add(self.update_lambda_with_jar(lambda_function_name, bucket_name, object_key))
+                function_arn.append(self.update_lambda_with_jar(lambda_function_name, bucket_name, object_key))
         print('The number of ARNs updated')
         print(function_arn)
 
