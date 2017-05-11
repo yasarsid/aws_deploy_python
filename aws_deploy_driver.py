@@ -19,7 +19,7 @@ class Driver:
     key_for_lambda_function_name = 'lambda_function_name'
 
     @staticmethod
-    def upload_jar_to_s3(path_to_jar, bucket_name):
+    def upload_jar_to_s3(path_to_jar, s3_bucket_path):
         """
         This Method uploads a jar to S3 bucket
         :param path_to_jar: 
@@ -27,10 +27,11 @@ class Driver:
         :return: Bucket Name and Object Key for uploaded Jar
         """
         s3 = boto3.resource('s3')
+        s3_bucket_name = s3_bucket_path.split("/",1)[0]
         # TODO: Add more logging to indicate the upload status
-        key = os.path.basename(path_to_jar)
-        s3.meta.client.upload_file(path_to_jar, bucket_name, key, ExtraArgs={'ACL':'authenticated-read'})
-        return bucket_name, key
+        key = s3_bucket_path.split("/",1)[1] + "/" + os.path.basename(path_to_jar)
+        s3.meta.client.upload_file(path_to_jar, s3_bucket_name, key, ExtraArgs={'ACL':'authenticated-read'})
+        return s3_bucket_name, key
 
     @staticmethod
     def read_json_config(json_file_path):

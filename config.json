@@ -3,12 +3,12 @@
   "config" : [
     {
       "relative_path_to_jar":"/output/deliverables/jar",
-      "s3_bucket_name":"s3_bucket",
+      "s3_bucket_name":"s3_bucket/folder1/folder2",
       "lambda_function_name":["lambda_function_first","lambda_function_second" ]
     },
     {
       "relative_path_to_jar":"/output/deliverables/jar",
-      "s3_bucket_name":"s3_bucket",
+      "s3_bucket_name":"s3_bucket/folder1/folder3",
       "lambda_function_name":["lambda_function"]
     }
   ]
